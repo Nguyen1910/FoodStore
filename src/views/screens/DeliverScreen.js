@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import COLORS from "../../consts/colors";
@@ -14,8 +15,11 @@ import FormInput from "../components/FormInput";
 import orderApi from "../../api/orderApi";
 import cartApi from "../../api/cartApi";
 import detailOrderApi from "../../api/detailOrderApi";
+import discountApi from "../../api/discountApi";
+import CONSTANTS from "../../consts/const";
 
 const PAYMENT = ["Thanh toán khi nhận hàng", "Thanh toán qua vi momo"];
+const CURRENT_DATE = new Date();
 
 const DeliverScreen = ({ navigation, route }) => {
   const [token] = route.params;
@@ -24,32 +28,78 @@ const DeliverScreen = ({ navigation, route }) => {
   const [receiverError, setReceiverError] = React.useState("");
   const [addressError, setAddressError] = React.useState("");
   const [cart, setCart] = React.useState([]);
-
+  const [listDiscount, setListDiscount] = React.useState([]);
+  const [showModal, setShowModal] = React.useState(false);
   const [selectedPay, setSelectedPay] = React.useState(0);
+  const [date, setDate] = React.useState("");
+  const [discount, setDiscount] = React.useState({});
+  const [total, setTotal] = React.useState(0);
 
   React.useEffect(() => {
     const getCart = async () => {
-      const result = await cartApi.getCart(token);
+      const result = await cartApi.getProductCart(token);
       setCart(result);
     };
     getCart();
+    const getDiscount = async () => {
+      const result = await discountApi.getAllDiscounts();
+      setListDiscount(result);
+    };
+    getDiscount();
   }, []);
+
+  React.useEffect(() => {
+    const totalFee = () => {
+      const total = cart
+        ? cart.reduce(
+            (total, crr) => total + crr.sanPham.giaSanPham * crr.soLuong,
+            0
+          )
+        : 0;
+      setTotal(total + CONSTANTS.SHIPPING_FEE);
+    };
+    totalFee();
+  }, [cart]);
+
+  const handleSelectedDiscount = (selectedDiscount) => {
+    setDiscount(selectedDiscount);
+    let tempDiscount = selectedDiscount.phanTramGiam || 0;
+    const totalFee = () => {
+      const total = cart
+        ? cart.reduce(
+            (total, crr) => total + crr.sanPham.giaSanPham * crr.soLuong,
+            0
+          )
+        : 0;
+      setTotal(((total + CONSTANTS.SHIPPING_FEE) * (100 - tempDiscount)) / 100);
+    };
+    totalFee();
+  };
 
   const checkInput = () => receiver !== "" && address !== "";
 
   const handleOrder = async () => {
-    if (checkInput) {
+    // console.log(discount.maPhieuGiamGia);
+    if (checkInput()) {
       try {
         const addOrder = await orderApi.addOrder({
           maTaiKhoan: token,
           nguoiNhan: receiver,
           diaChi: address,
+          maGiamGia: discount.maPhieuGiamGia,
         });
         addDetailOrder(addOrder.maDonHang);
         deleteCart();
         navigation.navigate("SuccessOrder");
       } catch (error) {
         console.log(error, "order");
+      }
+    } else {
+      if (receiver === "") {
+        setReceiverError("Nhập tên người nhận!");
+      }
+      if (address === "") {
+        setAddressError("Nhập địa chỉ nhận!");
       }
     }
   };
@@ -59,7 +109,7 @@ const DeliverScreen = ({ navigation, route }) => {
       try {
         const detailOrder = await detailOrderApi.addDetailOrder(
           maDonHang,
-          item.maSanPham,
+          item.sanPham.maSanPham,
           { soLuong: item.soLuong }
         );
       } catch (error) {
@@ -94,9 +144,94 @@ const DeliverScreen = ({ navigation, route }) => {
             name={icon}
             size={20}
           />
-          <Text style={{ marginLeft: 15, fontSize: 18 }}>{text}</Text>
+          <Text style={{ marginLeft: 15, fontSize: 20 }}>{text}</Text>
         </View>
       </TouchableOpacity>
+    );
+  };
+
+  const Discount = () => {
+    return (
+      <Modal transparent visible={showModal}>
+        <View
+          activeOpacity={0}
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "80%",
+              height: 400,
+              backgroundColor: COLORS.white,
+              borderRadius: 15,
+            }}
+          >
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 20,
+                marginTop: 10,
+              }}
+            >
+              <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                Chọn mã giảm giá
+              </Text>
+              <Icon
+                name="close"
+                size={40}
+                onPress={() => setShowModal(!showModal)}
+              ></Icon>
+            </View>
+            <ScrollView
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+              }}
+            >
+              {listDiscount.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.6}
+                  style={{
+                    width: "100%",
+                    backgroundColor: COLORS.secondary,
+                    paddingVertical: 10,
+                    paddingHorizontal: 20,
+                    borderRadius: 20,
+                    elevation: 5,
+                  }}
+                  onPress={() => {
+                    handleSelectedDiscount(item);
+                    setShowModal(!showModal);
+                  }}
+                >
+                  <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                    {item.tenPhieuGiamGia}
+                  </Text>
+                  <Text style={{ fontSize: 16 }}>
+                    Giảm giá: {item.phanTramGiam}%
+                  </Text>
+                  <Text style={{ fontSize: 16, color: COLORS.red }}>
+                    {`Hạn sử dụng: từ ${item.ngayBatDau.substring(
+                      0,
+                      10
+                    )} đến ${item.ngayKetThuc.substring(0, 10)}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     );
   };
 
@@ -118,7 +253,7 @@ const DeliverScreen = ({ navigation, route }) => {
           style={{ fontSize: 20, fontWeight: "bold" }}
           onPress={() => navigation.navigate("Home")}
         >
-          Deliver
+          Thông tin giao hàng
         </Text>
       </View>
       <ScrollView
@@ -130,16 +265,22 @@ const DeliverScreen = ({ navigation, route }) => {
       >
         <FormInput
           lable="Người nhận"
-          onChange={(value) => setReceiver(value)}
+          onChange={(value) => {
+            setReceiver(value);
+            setReceiverError("");
+          }}
           errorMsg={receiverError}
         />
         <FormInput
           lable="Địa chỉ"
-          onChange={(value) => setAddress(value)}
+          onChange={(value) => {
+            setAddress(value);
+            setAddressError("");
+          }}
           errorMsg={addressError}
         />
         <View style={{ marginTop: 5 }}>
-          <Text style={{ fontSize: 18 }}>Phương thức thanh toán</Text>
+          <Text style={{ fontSize: 20 }}>Phương thức thanh toán</Text>
           <View
             style={{
               marginBottom: 20,
@@ -165,6 +306,31 @@ const DeliverScreen = ({ navigation, route }) => {
             ))}
           </View>
         </View>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowModal(!showModal)}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 20,
+            marginTop: 10,
+            borderRadius: 15,
+            elevation: 13,
+            backgroundColor: COLORS.white,
+            paddingHorizontal: 20,
+            paddingVertical: 20,
+          }}
+        >
+          <Icon
+            style={{ marginRight: 10 }}
+            size={40}
+            name="local-activity"
+          ></Icon>
+          <Text style={{ fontSize: 20 }}>
+            {discount.maNhap || "Chọn phiếu giảm giá"}
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
       <View
         style={{
@@ -173,21 +339,27 @@ const DeliverScreen = ({ navigation, route }) => {
           elevation: 99,
         }}
       >
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+        >
+          <Text style={{ fontSize: 20 }}>Tổng: </Text>
+          <Text style={{ fontSize: 20 }}>{total}</Text>
+        </View>
         <SecondaryButton
           title="Đặt hàng"
-          btnContainerStyle={{
-            backgroundColor: COLORS.primary,
-            borderRadius: 30,
-            paddingVertical: 15,
-            width: 300,
-            marginBottom: 30,
-          }}
+          btnContainerStyle={styles.btnOrder}
           labelStyle={{
             color: COLORS.white,
           }}
-          onPress={handleOrder}
+          onPress={() => handleOrder()}
         />
       </View>
+      <Discount />
     </SafeAreaView>
   );
 };
@@ -210,6 +382,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
+  },
+  btnOrder: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 30,
+    paddingVertical: 15,
+    width: 300,
+    marginBottom: 30,
   },
 });
 

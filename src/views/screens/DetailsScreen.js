@@ -17,15 +17,24 @@ import StepperInput from "../components/StepperInput";
 import sizes from "../../consts/sizes";
 import productApi from "../../api/productApi";
 import favoriteApi from "../../api/favoriteApi";
+import ModalComponent from "../components/ModalComponent";
 
 const DetailsScreen = ({ navigation, route }) => {
   const [idProduct, token] = route.params;
   const [product, setProduct] = React.useState({});
   const [myCart, setMyCart] = React.useState([]);
-  const [isAdd, setIsAdd] = React.useState(true);
   const [selectedSize, setSelectedSize] = React.useState(0);
   const [isFavorite, setIsFavorite] = React.useState(false);
   const [qty, setQty] = React.useState(1);
+  const [sizeCart, setSizeCart] = React.useState(0);
+
+  const [showModal, setShowModal] = React.useState(false);
+  const [modal, setModal] = React.useState({
+    title: "Thêm sản phẩm vào giỏ hàng thành công",
+    icon: "check-circle-outline",
+    textBtn: "Đóng",
+    color: COLORS.green,
+  });
 
   React.useEffect(() => {
     const getProductById = async () => {
@@ -40,12 +49,11 @@ const DetailsScreen = ({ navigation, route }) => {
     const getFavorite = async () => {
       try {
         const result = await favoriteApi.getFavoriteByMaSP(token, idProduct);
-        if (result.length === 0) {
-          setIsFavorite(false);
-        } else {
+        if (result.length !== 0) {
           setIsFavorite(true);
         }
       } catch (error) {
+        setIsFavorite(false);
         console.log(error, "getFavorite");
       }
     };
@@ -62,49 +70,46 @@ const DetailsScreen = ({ navigation, route }) => {
       }
     };
     getMyCart();
-  }, [isAdd]);
+  }, [showModal]);
 
-  React.useEffect(() => {
-    const getFavorite = async () => {
-      try {
-        if (isFavorite) {
-          const addFavorite = await favoriteApi.addFavorite(token, idProduct);
-        } else {
-          const addFavorite = await favoriteApi.deleteFavorite(
-            token,
-            idProduct
-          );
-        }
-      } catch (error) {
-        console.log(error, "getFavorite");
+  const handleFavorite = async () => {
+    try {
+      console.log(token, idProduct);
+      console.log(isFavorite);
+      if (!isFavorite) {
+        const addFavorite = await favoriteApi.addFavorite(token, idProduct);
+      } else {
+        const addFavorite = await favoriteApi.deleteFavorite(token, idProduct);
       }
-    };
-    getFavorite();
-  }, [isFavorite]);
+    } catch (error) {
+      console.log(error, "getFavorite");
+    }
+  };
 
   const addToCart = async () => {
     try {
-      if (myCart !== []) {
-        let sl;
-        const checkCart = myCart.find((product) => {
-          sl = product.soLuong;
-          return product.maSanPham === idProduct;
-        });
-        if (checkCart) {
-          const add = await cartApi.updateCart(token, idProduct, {
-            soLuong: qty + sl,
-          });
-          sl = 0;
-        } else {
-          const add = await cartApi.addCart(token, idProduct, {
-            soLuong: qty,
-          });
-          sl = 0;
-        }
-        setIsAdd(!isAdd);
-      }
+      // const add = await cartApi.updateCart(token, idProduct, {
+      //   soLuong: qty + sl,
+      // });
+      const add = await cartApi.addCart(token, idProduct, {
+        soLuong: qty,
+      });
+
+      // else {
+      //   const add = await cartApi.addCart(token, idProduct, {
+      //     soLuong: qty,
+      //   });
+      // }
+      setShowModal(!showModal);
     } catch (error) {
       console.log(error, "addProduct");
+      setModal({
+        title: "Sản phẩm đã có trong giỏ hàng",
+        icon: "warning",
+        textBtn: "Đóng",
+        color: COLORS.red,
+      });
+      setShowModal(!showModal);
     }
   };
 
@@ -112,7 +117,9 @@ const DetailsScreen = ({ navigation, route }) => {
     <SafeAreaView style={{ backgroundColor: COLORS.white, marginTop: 30 }}>
       <View style={styles.header}>
         <Icon name="arrow-back-ios" size={28} onPress={navigation.goBack} />
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>Detail</Text>
+        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+          Chi tiết sản phẩm
+        </Text>
         <TouchableOpacity
           style={{
             width: 40,
@@ -182,7 +189,7 @@ const DetailsScreen = ({ navigation, route }) => {
             </Text>
           </View>
           <Image
-            source={require("../../assets/product.png") || product.anhSanPham}
+            source={product.anhSanPham || require("../../assets/product.png")}
             style={{ height: 220, width: 220 }}
           />
         </View>
@@ -205,7 +212,12 @@ const DetailsScreen = ({ navigation, route }) => {
             >
               {product.tenSanPham}
             </Text>
-            <View
+            <TouchableOpacity
+              onPress={() => {
+                setIsFavorite(!isFavorite);
+                handleFavorite();
+              }}
+              activeOpacity={0.8}
               style={{
                 ...styles.iconContainer,
                 backgroundColor: isFavorite ? COLORS.red : COLORS.white,
@@ -215,15 +227,12 @@ const DetailsScreen = ({ navigation, route }) => {
                 name="favorite-border"
                 size={28}
                 style={{
-                  color: COLORS.primary,
-                }}
-                onPress={() => {
-                  setIsFavorite(!isFavorite);
+                  color: isFavorite ? COLORS.white : COLORS.primary,
                 }}
               />
-            </View>
+            </TouchableOpacity>
           </View>
-          <View style={{ marginTop: 20 }}>
+          <View style={{ marginVertical: 10 }}>
             <Text style={{ fontSize: 16, color: COLORS.light }}>
               {product.moTa || "Trà sữa được làm từ sữa và trà"}
             </Text>
@@ -248,6 +257,7 @@ const DetailsScreen = ({ navigation, route }) => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
+                marginBottom: 5,
               }}
             >
               {sizes.map((item, index) => {
@@ -279,6 +289,7 @@ const DetailsScreen = ({ navigation, route }) => {
               alignItems: "center",
               justifyContent: "space-between",
               marginTop: 20,
+              marginBottom: 10,
             }}
           >
             <StepperInput
@@ -310,7 +321,7 @@ const DetailsScreen = ({ navigation, route }) => {
             </View>
           </View>
           <SecondaryButton
-            title="Add To Cart"
+            title="Thêm vào giỏ hàng"
             btnContainerStyle={{
               paddingVertical: 10,
               paddingHorizontal: 30,
@@ -319,16 +330,27 @@ const DetailsScreen = ({ navigation, route }) => {
               marginVertical: 20,
             }}
             onPress={() => {
-              ToastAndroid.show(
-                "Thêm sản phẩm thành công",
-                ToastAndroid.BOTTOM
-              );
+              // ToastAndroid.show(
+              //   "Thêm sản phẩm thành công",
+              //   ToastAndroid.BOTTOM
+              // );
               addToCart();
               // navigation.navigate("Home")
             }}
           />
         </View>
       </ScrollView>
+      <ModalComponent
+        showModal={showModal}
+        onPress={() => {
+          setShowModal(!showModal);
+        }}
+        title={modal.title}
+        icon={modal.icon}
+        textBtn={modal.textBtn}
+        color={modal.color}
+        // styleIcon
+      />
     </SafeAreaView>
   );
 };
@@ -343,7 +365,7 @@ const styles = StyleSheet.create({
   },
   detail: {
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 20,
     paddingBottom: 60,
     backgroundColor: COLORS.primary,
     borderTopRightRadius: 40,

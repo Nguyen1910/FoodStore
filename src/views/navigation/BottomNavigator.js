@@ -11,7 +11,11 @@ import ProfileScreen from "../screens/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
-const BottomNavigator = () => {
+const BottomNavigator = ({ navigation }) => {
+  const [reload, setReload] = React.useState(false);
+  React.useEffect(() => {
+    setReload(!reload);
+  }, [navigation]);
   return (
     <Tab.Navigator
       screenOptions={{

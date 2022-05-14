@@ -8,12 +8,14 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-} from "react-native";
-import {
   FlatList,
-  ScrollView,
   TouchableHighlight,
-} from "react-native-gesture-handler";
+} from "react-native";
+// import {
+//   FlatList,
+//   ScrollView,
+//   TouchableHighlight,
+// } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import categoryApi from "../../api/categoryApi";
@@ -74,8 +76,6 @@ const HomeScreen = ({ navigation }) => {
     };
     getProducts();
   }, [idCategory]);
-
-  const handleAddCard = () => {};
 
   const ListCategory = () => {
     return (
@@ -140,13 +140,15 @@ const HomeScreen = ({ navigation }) => {
               style={{ height: 120, width: 120, borderRadius: 10 }}
             />
           </View>
-          <View style={{ marginTop: 10, marginBottom: 5 }}>
+          <View style={{ marginTop: 15, height: 40 }}>
             <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-              {product.tenSanPham}
+              {product.tenSanPham.length > 25
+                ? `${product.tenSanPham.substring(0, 25)}...`
+                : product.tenSanPham}
             </Text>
-            <Text style={{ fontSize: 12, color: COLORS.grey }}>
-              {/* {product.} */}
-            </Text>
+            {/* <Text style={{ fontSize: 12, color: COLORS.grey }}>
+              {product.moTa}
+            </Text> */}
           </View>
           <View
             style={{
@@ -159,7 +161,7 @@ const HomeScreen = ({ navigation }) => {
             <Text style={{ fontSize: 14, fontWeight: "bold" }}>
               {product.giaSanPham}đ
             </Text>
-            <View style={styles.addToCartBtn} onPress={() => handleAddCard}>
+            <View style={styles.addToCartBtn}>
               <Icon name="add" size={20} color={COLORS.white} />
             </View>
           </View>
@@ -194,6 +196,7 @@ const HomeScreen = ({ navigation }) => {
           <TextInput
             style={{ flex: 1, fontSize: 16, paddingLeft: 5 }}
             placeholder="Tìm kiếm đồ uống"
+            onChangeText={(value) => console.log(value)}
           />
         </View>
         <View style={styles.sortBtn}>
@@ -261,10 +264,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   card: {
-    height: 270,
+    height: 240,
     width: cardWidth,
     marginHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     marginTop: 30,
     borderRadius: 15,
     elevation: 13,

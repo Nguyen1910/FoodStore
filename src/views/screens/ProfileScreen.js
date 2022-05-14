@@ -49,15 +49,17 @@ const ProfileScreen = ({ navigation }) => {
       console.log(error);
     }
   };
-  const ProfileItem = ({ title, icon, arrow, textNav }) => {
+  const ProfileItem = ({ title, icon, arrow, onPress }) => {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate(textNav, [token])}>
+      <TouchableOpacity onPress={onPress}>
         <View style={styles.menuItem}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Icon name={icon} color={COLORS.primary} size={20} />
-            <Text style={{ color: COLORS.dark, marginLeft: 15 }}>{title}</Text>
+            <Icon name={icon} color={COLORS.primary} size={23} />
+            <Text style={{ color: COLORS.dark, marginLeft: 15, fontSize: 16 }}>
+              {title}
+            </Text>
           </View>
-          <Icon name={arrow} color={COLORS.dark} size={20} />
+          <Icon name={arrow} color={COLORS.dark} size={25} />
         </View>
       </TouchableOpacity>
     );
@@ -66,10 +68,10 @@ const ProfileScreen = ({ navigation }) => {
     <SafeAreaView
       style={{ flex: 1, backgroundColor: COLORS.white, paddingVertical: 20 }}
     >
-      <TouchableOpacity onPress={() => navigation.navigate("InfoUser")}>
+      <TouchableOpacity onPress={() => navigation.navigate("InfoUser", token)}>
         <View style={styles.header}>
           <Image
-            source={require("../../assets/product.png")}
+            source={require("../../assets/user.png")}
             style={{ height: 50, width: 50, borderRadius: 25 }}
           />
           <View style={{ marginLeft: 30 }}>
@@ -110,31 +112,37 @@ const ProfileScreen = ({ navigation }) => {
           title="Ưa thích"
           icon="favorite-outline"
           arrow="keyboard-arrow-right"
-          textNav="Favorite"
+          onPress={() => navigation.navigate("Favorite", [token])}
         />
         <ProfileItem
           title="Đơn hàng"
           icon="assignment"
           arrow="keyboard-arrow-right"
-          textNav="Order"
+          onPress={() => navigation.navigate("Order", [token])}
         />
         <ProfileItem
           title="Liên hệ"
           icon="contact-support"
           arrow="keyboard-arrow-right"
-          textNav="Contact"
+          onPress={() => navigation.navigate("Contact", [token])}
         />
         <ProfileItem
           title="Cài đặt"
           icon="settings"
           arrow="keyboard-arrow-right"
-          textNav="Setting"
+          onPress={() => navigation.navigate("Setting", [token])}
+        />
+        <ProfileItem
+          title="Đổi mật khẩu"
+          icon="edit"
+          arrow="keyboard-arrow-right"
+          onPress={() => navigation.navigate("Password", [token])}
         />
         <ProfileItem
           title="Đăng xuất"
           icon="logout"
           arrow=""
-          textNav="SignIn"
+          onPress={() => navigation.navigate("SignIn", [token])}
         />
       </View>
     </SafeAreaView>

@@ -3,102 +3,87 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import AuthLayout from "./AuthLayout";
+import AuthLayout from "../Authentication/AuthLayout";
 import COLORS from "../../consts/colors";
 import FormInput from "../components/FormInput";
 import utils from "../../utils/Ultils";
 import Button, { SecondaryButton } from "../components/Button";
-import DateTime from "../components/DateTime";
 import accountApi from "../../api/accountApi";
 import ModalComponent from "../components/ModalComponent";
 
-const SignUp = ({ navigation }) => {
-  const [account, setAccount] = React.useState("");
-  const [accountError, setAccountError] = React.useState("");
+function GetAccountScreen({ navigation, route }) {
+  const [OTP, maTK] = route.params;
+  const [otp, setOtp] = React.useState(0);
+  const [errorOtp, setErrorOtp] = React.useState("");
+  const [account, setAccount] = React.useState({});
   const [password, setPassword] = React.useState("");
   const [confirmPass, setConfirmPass] = React.useState("");
   const [passError, setPassError] = React.useState("");
   const [confirmPassError, setConfirmPassError] = React.useState("");
   const [showPass, setShowPass] = React.useState(false);
   const [showConfirmPass, setShowConfirmPass] = React.useState(false);
-  // const [emailError, setEmailError] = React.useState("");
-  const [username, setUsername] = React.useState("");
-  const [birthday, setBirthday] = React.useState("");
-  const [address, setAddress] = React.useState("");
-  const [phone, setPhone] = React.useState("");
 
   const [showModal, setShowModal] = React.useState(false);
 
+  React.useEffect(() => {
+    const getAccount = async () => {
+      const result = await accountApi.getAccount(maTK);
+      setAccount(result);
+    };
+    getAccount();
+  }, []);
+
   function isEnabledSignUp() {
     return (
-      account !== "" &&
-      accountError === "" &&
       password !== "" &&
       confirmPass !== "" &&
       passError === "" &&
       confirmPassError === "" &&
-      username !== "" &&
-      birthday !== "" &&
-      address !== "" &&
-      phone !== ""
+      otp !== "" &&
+      errorOtp === ""
     );
   }
 
   const checkPass = () => password === confirmPass;
 
-  const checkAccount = async () => {
-    try {
-      const resutl = await accountApi.checkAccount(account);
-      if (resutl !== "") {
-        return resutl;
+  const handleBtn = () => {
+    if (parseInt(otp) === OTP) {
+      if (checkPass()) {
+        const updateAccount = async () => {
+          let data = { ...account, matKhau: password };
+          try {
+            const result = await accountApi.updateAccount(maTK, data);
+            setShowModal(!showModal);
+          } catch (error) {
+            console.log(error, "updateAccount");
+          }
+        };
+        updateAccount();
+      } else {
+        setConfirmPassError("Chưa đúng");
       }
-    } catch (error) {
-      console.log(error, "checkAccount");
+    } else {
+      setErrorOtp("Mã xác nhận không đúng");
     }
   };
 
-  const handleBtnSignUp = async () => {
-    const maTK = await checkAccount();
-    console.log(maTK);
-    if (maTK === undefined) {
-      if (checkPass()) {
-        let data = {
-          tenTaiKhoan: account,
-          matKhau: password,
-          trangThai: 1,
-          hoVaTen: username,
-          quyenTaiKhoan: 0,
-          anhDaiDien: "",
-          diaChi: address,
-          ngaySinh: birthday,
-          soDienThoai: phone,
-        };
-        try {
-          const result = await accountApi.addAccount(data);
-          setShowModal(!showModal);
-        } catch (error) {
-          console.log(error, "addAccount");
-        }
-      } else {
-        setConfirmPassError("Mật khẩu xác nhận sai");
-      }
-    }
-  };
   return (
     <>
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <View style={styles.header}>
           <Icon name="arrow-back-ios" size={28} />
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Đăng ký</Text>
+          <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+            Xác nhận mật khẩu
+          </Text>
         </View>
       </TouchableOpacity>
       <AuthLayout
-        title="Đăng ký tài khoản"
-        subtitle="Tạo một tài khoản để tiếp tục"
+        title="Lấy mật khẩu"
+        // subtitle="Nhập đầy đủ để lấy lại thông tin"
         titleContainerStyle={{
           marginTop: 20,
         }}
@@ -111,12 +96,14 @@ const SignUp = ({ navigation }) => {
           }}
         >
           <FormInput
-            lable="Tài khoản"
+            errorMsg={errorOtp}
+            lable="Mã xác nhận"
             containerStyle={{
               marginTop: 15,
             }}
-            onChange={(value) => setAccount(value)}
-            errorMsg={accountError}
+            onChange={(value) => {
+              setOtp(value);
+            }}
             appendComponent={
               <View
                 style={{
@@ -125,16 +112,9 @@ const SignUp = ({ navigation }) => {
               >
                 <Icon
                   style={{
-                    color:
-                      account == "" || (account != "" && accountError == "")
-                        ? COLORS.green
-                        : COLORS.red,
+                    color: otp !== "" ? COLORS.green : COLORS.red,
                   }}
-                  name={
-                    account == "" || (account != "" && accountError == "")
-                      ? "check-circle-outline"
-                      : "warning"
-                  }
+                  name={otp !== "" ? "check-circle-outline" : "warning"}
                   size={20}
                 />
               </View>
@@ -206,90 +186,18 @@ const SignUp = ({ navigation }) => {
               </TouchableOpacity>
             }
           />
-          <FormInput
-            lable="Họ và tên"
-            containerStyle={{
-              marginTop: 15,
-            }}
-            onChange={(value) => setUsername(value)}
-            appendComponent={
-              <View
-                style={{
-                  justifyContent: "center",
-                }}
-              >
-                <Icon
-                  style={{
-                    color: username !== "" ? COLORS.green : COLORS.red,
-                  }}
-                  name={username !== "" ? "check-circle-outline" : "warning"}
-                  size={20}
-                />
-              </View>
-            }
-          />
-          <DateTime
-            title="Ngày sinh"
-            value={birthday}
-            setBirthday={setBirthday}
-          />
-          <FormInput
-            lable="Địa chỉ"
-            containerStyle={{
-              marginTop: 15,
-            }}
-            onChange={(value) => setAddress(value)}
-            appendComponent={
-              <View
-                style={{
-                  justifyContent: "center",
-                }}
-              >
-                <Icon
-                  style={{
-                    color: address !== "" ? COLORS.green : COLORS.red,
-                  }}
-                  name={address !== "" ? "check-circle-outline" : "warning"}
-                  size={20}
-                />
-              </View>
-            }
-          />
-          <FormInput
-            lable="Số điện thoại"
-            containerStyle={{
-              marginTop: 15,
-            }}
-            onChange={(value) => setPhone(value)}
-            appendComponent={
-              <View
-                style={{
-                  justifyContent: "center",
-                }}
-              >
-                <Icon
-                  style={{
-                    color: phone !== "" ? COLORS.green : COLORS.red,
-                  }}
-                  name={phone !== "" ? "check-circle-outline" : "warning"}
-                  size={20}
-                />
-              </View>
-            }
-          />
-
-          <View style={{ marginTop: 20 }}>
+          <View style={{ marginTop: 25 }}>
             <Button
               disabled={isEnabledSignUp() ? false : true}
-              title="Đăng Ký"
-              onPress={() => handleBtnSignUp()}
+              title="Lấy mật khẩu"
+              onPress={() => handleBtn()}
             />
           </View>
         </ScrollView>
       </AuthLayout>
       <ModalComponent
         showModal={showModal}
-        title="Tạo tài khoản thành công"
+        title="Đổi mật khẩu thành công"
         onPress={() => {
           setShowModal(!showModal);
           navigation.navigate("SignIn");
@@ -298,10 +206,9 @@ const SignUp = ({ navigation }) => {
         textBtn="Đăng nhập"
         // styleIcon
       />
-      <View style={{ marginBottom: 20 }}></View>
     </>
   );
-};
+}
 const styles = StyleSheet.create({
   header: {
     // paddingHorizontal: 20,
@@ -312,4 +219,4 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
 });
-export default SignUp;
+export default GetAccountScreen;

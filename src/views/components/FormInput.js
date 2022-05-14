@@ -15,6 +15,7 @@ const FormInput = ({
   autoCompleteType = "off",
   autoCapitalize = "none",
   errorMsg = "",
+  value,
 }) => {
   return (
     <View
@@ -30,7 +31,7 @@ const FormInput = ({
           marginBottom: -10,
         }}
       >
-        <Text style={{ color: COLORS.grey, fontSize: 18 }}>{lable}</Text>
+        <Text style={{ color: COLORS.dark, fontSize: 18 }}>{lable}</Text>
         <Text style={{ color: COLORS.red, fontSize: 18 }}>{errorMsg}</Text>
       </View>
       <View
@@ -45,6 +46,7 @@ const FormInput = ({
       >
         {prependComponent}
         <TextInput
+          value={value}
           style={{
             flex: 1,
             paddingHorizontal: 5,

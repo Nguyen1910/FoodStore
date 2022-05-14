@@ -8,6 +8,7 @@ import COLORS from "../../consts/colors";
 import utils from "../../utils/Ultils";
 import Button, { SecondaryButton } from "../components/Button";
 import accountApi from "../../api/accountApi";
+import ModalComponent from "../components/ModalComponent";
 
 const SignIn = ({ navigation }) => {
   const [username, setUsername] = React.useState("");
@@ -16,6 +17,7 @@ const SignIn = ({ navigation }) => {
   const [userError, setUserError] = React.useState("");
   const [passError, setPassError] = React.useState("");
   const [showPass, setShowPass] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(true);
 
   function isEnabledSignIn() {
     return username != "" && password != "" && userError == "";
@@ -23,7 +25,6 @@ const SignIn = ({ navigation }) => {
   const handlePressSignIn = async () => {
     try {
       const result = await accountApi.getLogin(username, password);
-      console.log(result);
       if (result.matKhau === password && result.trangThai === 1) {
         const token = JSON.parse(await AsyncStorage.getItem("token")) || "";
         if (token === "") {
@@ -33,6 +34,8 @@ const SignIn = ({ navigation }) => {
           );
         }
         navigation.navigate("Home");
+      } else if (result.matKhau === password && result.trangThai === 0) {
+        setError("Tài khoản bị khóa!");
       }
     } catch (error) {
       setError("Thông tin không chính xác!");
@@ -44,16 +47,12 @@ const SignIn = ({ navigation }) => {
     const removeToken = async () => {
       await AsyncStorage.removeItem("token");
       const token = JSON.parse(await AsyncStorage.getItem("token")) || "";
-      console.log(token);
     };
     removeToken();
   }, []);
 
   return (
-    <AuthLayout
-      title="Let's Sign You In"
-      subtitle="Welcome back, You've been missed"
-    >
+    <AuthLayout title="Đăng nhập" subtitle="Chào mừng bạn đến với chúng tôi">
       <View
         style={{
           flex: 1,
@@ -61,7 +60,7 @@ const SignIn = ({ navigation }) => {
         }}
       >
         <FormInput
-          lable="Username"
+          lable="Tài khoản"
           placeholder=""
           onChange={(value) => {
             setUsername(value);
@@ -92,7 +91,7 @@ const SignIn = ({ navigation }) => {
           }
         />
         <FormInput
-          lable="Password"
+          lable="Mật khẩu"
           autoCompleteType="password"
           secureTextEntry={!showPass}
           containerStyle={{

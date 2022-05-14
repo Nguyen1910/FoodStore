@@ -1,20 +1,24 @@
 import axiosClient from "./ApiConfig";
 
 const accountApi = {
+  getAll: () => {
+    const url = `/DonHang`;
+    return axiosClient.get(url);
+  },
   getOrder: (maTK) => {
-    const url = `/DonHang/${maTK}`;
+    const url = `/DonHang/GetDonHangByMaTaiKhoan/${maTK}`;
+    return axiosClient.get(url);
+  },
+  getDetailOrder: (maDH) => {
+    const url = `/ChiTietDonHang/${maDH}`;
     return axiosClient.get(url);
   },
   addOrder: (data) => {
     const url = `/DonHang`;
     return axiosClient.post(url, data);
   },
-  deleteOrder: (maTK, maSP) => {
-    const url = `/DonHang/${maTK}/${maSP}`;
-    return axiosClient.delete(url);
-  },
-  deleteAllOrder: (maTK) => {
-    const url = `/DonHang/${maTK}/${maSP}`;
+  deleteOrder: (maDH) => {
+    const url = `/DonHang/${maDH}`;
     return axiosClient.delete(url);
   },
 };

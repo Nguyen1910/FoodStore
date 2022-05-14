@@ -38,23 +38,25 @@ const FavoriteScreen = ({ navigation, route }) => {
         underlayColor={COLORS.white}
         activeOpacity={0.9}
         onPress={() =>
-          navigation.navigate("DetailsScreen", [product.maSanPham, token])
+          navigation.navigate("DetailsScreen", [product.maSanPham, ...token])
         }
       >
         <View style={styles.card}>
           <View style={{ alignItems: "center", marginTop: 10 }}>
             <Image
-              source={require("../../assets/product.png") || product.anhSanPham}
+              source={require("../../assets/product.png")}
               style={{ height: 120, width: 120, borderRadius: 10 }}
             />
           </View>
-          <View style={{ marginTop: 10, marginBottom: 5 }}>
+          <View style={{ marginTop: 15, height: 40 }}>
             <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-              {product.tenSanPham}
+              {product.tenSanPham.length > 25
+                ? `${product.tenSanPham.substring(0, 25)}...`
+                : product.tenSanPham}
             </Text>
-            <Text style={{ fontSize: 12, color: COLORS.grey }}>
-              {product.moTa || "Ngon"}
-            </Text>
+            {/* <Text style={{ fontSize: 12, color: COLORS.grey }}>
+              {product.moTa}
+            </Text> */}
           </View>
           <View
             style={{
@@ -104,50 +106,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 20,
   },
-  inputContainer: {
-    flex: 1,
-    backgroundColor: COLORS.light,
-    borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    height: 50,
-  },
-  sortBtn: {
-    backgroundColor: COLORS.primary,
-    width: 50,
-    height: 50,
-    marginLeft: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  categoriesListContainer: {
-    paddingVertical: 30,
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  categoryBtn: {
-    height: 45,
-    marginRight: 7,
-    borderRadius: 30,
-    alignItems: "center",
-    paddingHorizontal: 5,
-    flexDirection: "row",
-  },
-  categoryBtnImg: {
-    height: 35,
-    width: 35,
-    backgroundColor: COLORS.white,
-    borderRadius: 35,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+
   card: {
-    height: 270,
+    height: 240,
     width: cardWidth,
     marginHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     marginTop: 30,
     borderRadius: 15,
     elevation: 13,

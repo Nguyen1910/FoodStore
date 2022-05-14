@@ -14,8 +14,7 @@ import COLORS from "../../consts/colors";
 import cartApi from "../../api/cartApi";
 import StepperInput from "../components/StepperInput";
 import { SecondaryButton } from "../components/Button";
-
-const SHIPPING_FEE = 2000;
+import CONSTANTS from "../../consts/const";
 
 const CartScreen = ({ navigation }) => {
   const [token, setToken] = React.useState("");
@@ -23,6 +22,8 @@ const CartScreen = ({ navigation }) => {
 
   const [subtotal, setSubtotal] = React.useState(0);
   const [total, setTotal] = React.useState(0);
+
+  const [isDelete, setIsDelete] = React.useState(false);
 
   React.useEffect(() => {
     const getToken = async () => {
@@ -46,7 +47,7 @@ const CartScreen = ({ navigation }) => {
       }
     };
     getMyCart();
-  }, [token]);
+  }, [token, isDelete]);
 
   React.useEffect(() => {
     const totalFee = async () => {
@@ -57,14 +58,14 @@ const CartScreen = ({ navigation }) => {
           )
         : 0;
       setSubtotal(total);
-      setTotal(total + SHIPPING_FEE);
+      setTotal(total + CONSTANTS.SHIPPING_FEE);
     };
     totalFee();
     const updateProductCart = async () => {
       if (cart === []) {
         setProductCart([]);
       } else {
-        cart.forEach(async (product) => {
+        cart.forEach(async (product, index) => {
           try {
             const updateCart = await cartApi.updateCart(
               token,
@@ -87,42 +88,38 @@ const CartScreen = ({ navigation }) => {
     setCart(newCartList);
   }
 
-  function removeMyCartHandler(id) {
-    const newCart = JSON.parse(JSON.stringify(cart));
-    const index = newCart.findIndex((item) => item.sanPham.maSanPham === id);
-    newCart.splice(index, 1);
-    setCart(newCart);
-    const deleteCartItem = async () => {
-      try {
-        const result = await cartApi.deleteCartItem(token, id);
-      } catch (error) {
-        console.log(error, "delete");
-      }
-    };
-    deleteCartItem();
-  }
+  const removeMyCartHandler = async (id) => {
+    try {
+      const result = await cartApi.deleteCartItem(token, id);
+    } catch (error) {
+      console.log(error, "delete");
+    }
+    setIsDelete(!isDelete);
+  };
 
   const CartCard = ({ item }) => {
     return (
       <View style={styles.cartCard}>
         <Image
-          source={require("../../assets/product.png" ||
-            item.sanPham.anhSanPham)}
+          source={
+            item.sanPham.anhSanPham || require("../../assets/product.png")
+          }
           style={{ height: 80, width: 80, borderRadius: 40 }}
         />
         <View style={{ marginLeft: 15, paddingVertical: 20, flex: 1 }}>
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: "bold",
-              lineHeight: 20,
-              height: 40,
+              height: 45,
               marginBottom: 5,
             }}
           >
-            {item.sanPham.tenSanPham}
+            {item.sanPham.tenSanPham.length > 22
+              ? `${item.sanPham.tenSanPham.substring(0, 22)}...`
+              : item.sanPham.tenSanPham}
           </Text>
-          <Text style={{ fontSize: 17, fontWeight: "bold" }}>
+          <Text style={{ fontSize: 16, fontWeight: "bold" }}>
             {item.sanPham.giaSanPham}đ
           </Text>
         </View>
@@ -202,7 +199,7 @@ const CartScreen = ({ navigation }) => {
           style={{ fontSize: 20, fontWeight: "bold" }}
           onPress={() => navigation.navigate("Home")}
         >
-          Cart
+          Giỏ hàng
         </Text>
       </View>
       {/* Cart List */}
@@ -226,7 +223,7 @@ const CartScreen = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <Text style={{ fontSize: 18 }}>Subtotal</Text>
+          <Text style={{ fontSize: 18 }}>Tổng</Text>
           <Text style={{ fontSize: 18 }}>{subtotal}đ</Text>
         </View>
 
@@ -237,8 +234,8 @@ const CartScreen = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <Text style={{ fontSize: 18 }}>Shipping fee</Text>
-          <Text style={{ fontSize: 18 }}>{SHIPPING_FEE}đ</Text>
+          <Text style={{ fontSize: 18 }}>Phí vận chuyển</Text>
+          <Text style={{ fontSize: 18 }}>{CONSTANTS.SHIPPING_FEE}đ</Text>
         </View>
 
         {/* Total */}
@@ -248,7 +245,7 @@ const CartScreen = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Total</Text>
+          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Tổng cộng</Text>
           <Text style={{ fontSize: 20, fontWeight: "bold" }}>{total}</Text>
         </View>
 
@@ -264,7 +261,12 @@ const CartScreen = ({ navigation }) => {
           labelStyle={{
             color: COLORS.white,
           }}
-          onPress={() => navigation.navigate("Deliver", [token])}
+          onPress={() => {
+            if (cart.length === 0) {
+            } else {
+              navigation.navigate("Deliver", [token]);
+            }
+          }}
         />
       </View>
     </SafeAreaView>

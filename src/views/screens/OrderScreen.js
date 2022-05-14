@@ -6,76 +6,116 @@ import {
   StyleSheet,
   FlatList,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { SwipeListView } from "react-native-swipe-list-view";
 import COLORS from "../../consts/colors";
-import cartApi from "../../api/cartApi";
+import orderApi from "../../api/orderApi";
 import { SecondaryButton } from "../components/Button";
-
-const SHIPPING_FEE = 2000;
+import discountApi from "../../api/discountApi";
+import ModalComponent from "../components/ModalComponent";
 
 const OrderScreen = ({ navigation, route }) => {
   const token = route.params;
-  const [order, setOrder] = React.useState([]);
+  const [listOrder, setListOrder] = React.useState([]);
+
+  const [showModal, setShowModal] = React.useState(false);
+  const [modal, setModal] = React.useState({
+    title: "Xóa đơn hàng thành công",
+    icon: "check-circle-outline",
+    textBtn: "Đóng",
+    color: COLORS.green,
+  });
 
   React.useEffect(() => {
     const getOrder = async () => {
       try {
-        const result = await cartApi.getMyCart(token);
-        setCart(result);
+        const result = await orderApi.getOrder(token);
+        setListOrder(result);
       } catch (error) {
         console.log(error, "Cart");
       }
     };
-    getMyCart();
-  }, [token]);
+    getOrder();
+  }, [token, showModal]);
 
-  const CartCard = ({ item }) => {
+  const handleRemoveOrder = async (order) => {
+    if (order.trangThaiDonHang === 0) {
+      try {
+        const deleteOrder = await orderApi.deleteOrder(order.maDonHang);
+        setShowModal(!showModal);
+      } catch (error) {
+        console.log(error, "remove order");
+      }
+    }
+  };
+
+  const OrderCard = ({ item }) => {
     return (
-      <View style={styles.cartCard}>
-        <Image
-          source={require("../../assets/product.png" ||
-            item.sanPham.anhSanPham)}
-          style={{ height: 80, width: 80, borderRadius: 40 }}
-        />
-        <View style={{ marginLeft: 15, paddingVertical: 20, flex: 1 }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              lineHeight: 20,
-              height: 40,
-              marginBottom: 5,
-            }}
-          >
-            {item.sanPham.tenSanPham}
-          </Text>
-          <Text style={{ fontSize: 17, fontWeight: "bold" }}>
-            {item.sanPham.giaSanPham}đ
-          </Text>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() =>
+          navigation.navigate("DetailOrder", [item.maDonHang, item.maGiamGia])
+        }
+      >
+        <View style={styles.orderCard}>
+          <View style={{}}>
+            <Text
+              style={{ marginBottom: 10, fontSize: 18, fontWeight: "bold" }}
+            >
+              Mã đơn hàng:
+            </Text>
+            <Text
+              style={{ marginBottom: 10, fontSize: 18, fontWeight: "bold" }}
+            >
+              Ngày lập:
+            </Text>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              Trạng thái:
+            </Text>
+          </View>
+          <View style={{ display: "flex", alignItems: "flex-end" }}>
+            <Text
+              style={{ marginBottom: 10, fontSize: 18, fontWeight: "bold" }}
+            >
+              {item.maDonHang.length > 10
+                ? `${item.maDonHang.substring(0, 10)}...`
+                : item.maDonHang}
+            </Text>
+            <Text
+              style={{ marginBottom: 10, fontSize: 18, fontWeight: "bold" }}
+            >
+              {item.ngayLap.substring(0, 10)}
+            </Text>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              {item.trangThaiDonHang === 0
+                ? "Đang chờ xử lý"
+                : item.trangThaiDonHang === 1
+                ? "Đang giao"
+                : "Hoàn thành"}
+            </Text>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   function RenderCartList() {
     return (
       <SwipeListView
-        data={cart}
+        data={listOrder}
         keyExtractor={(item, index) => index}
-        contentContainerStyle={
-          {
-            // paddingBottom:60
-          }
-        }
+        contentContainerStyle={{
+          marginTop: 10,
+        }}
         disableRightSwipe={true}
         rightOpenValue={-75}
-        renderItem={({ item }) => <CartCard item={item} />}
+        renderItem={({ item }) => <OrderCard item={item} />}
         renderHiddenItem={({ item }) => (
           <View
             style={{
-              ...styles.cartCard,
+              ...styles.orderCard,
               backgroundColor: COLORS.primary,
               elevation: 0,
             }}
@@ -91,7 +131,7 @@ const OrderScreen = ({ navigation, route }) => {
                 right: 20,
                 color: COLORS.white,
               }}
-              onPress={() => removeMyCartHandler(item.sanPham.maSanPham)}
+              onPress={() => handleRemoveOrder(item)}
             />
           </View>
         )}
@@ -117,81 +157,22 @@ const OrderScreen = ({ navigation, route }) => {
           style={{ fontSize: 20, fontWeight: "bold" }}
           onPress={() => navigation.navigate("Home")}
         >
-          Cart
+          Đơn hàng
         </Text>
       </View>
       {/* Cart List */}
       <RenderCartList />
-
-      {/* Order Details */}
-      <View
-        style={{
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          backgroundColor: COLORS.secondary,
-          // elevation: ,
-          paddingHorizontal: 15,
-          paddingVertical: 10,
+      <ModalComponent
+        showModal={showModal}
+        onPress={() => {
+          setShowModal(!showModal);
         }}
-      >
-        {/* Subtotal */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>Subtotal</Text>
-          <Text style={{ fontSize: 18 }}>{subtotal}đ</Text>
-        </View>
-
-        {/* Shipping Fee */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>Shipping fee</Text>
-          <Text style={{ fontSize: 18 }}>{SHIPPING_FEE}đ</Text>
-        </View>
-
-        {/* Line */}
-        <View
-          style={{
-            // border: '1px solid #ccc',
-            backgroundColor: COLORS.light,
-            height: 1,
-            marginVertical: 10,
-          }}
-        ></View>
-
-        {/* Total */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>Total</Text>
-          <Text style={{ fontSize: 20, fontWeight: "bold" }}>{total}</Text>
-        </View>
-
-        {/* Button */}
-        <SecondaryButton
-          title="Thanh toán"
-          btnContainerStyle={{
-            backgroundColor: COLORS.primary,
-            borderRadius: 30,
-            paddingVertical: 10,
-            marginVertical: 15,
-          }}
-          labelStyle={{
-            color: COLORS.white,
-          }}
-          onPress={() => removeCart("myCart")}
-        />
-      </View>
+        title={modal.title}
+        icon={modal.icon}
+        textBtn={modal.textBtn}
+        color={modal.color}
+        // styleIcon
+      />
     </SafeAreaView>
   );
 };
@@ -204,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 20,
   },
-  cartCard: {
+  orderCard: {
     height: 130,
     elevation: 15,
     borderRadius: 10,
@@ -213,7 +194,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    justifyContent: "space-between",
   },
 });
 
