@@ -57,8 +57,7 @@ const CartScreen = ({ navigation }) => {
             0
           )
         : 0;
-      setSubtotal(total);
-      setTotal(total + CONSTANTS.SHIPPING_FEE);
+      setTotal(total);
     };
     totalFee();
     const updateProductCart = async () => {
@@ -101,8 +100,7 @@ const CartScreen = ({ navigation }) => {
     return (
       <View style={styles.cartCard}>
         <Image
-          source={
-            item.sanPham.anhSanPham || require("../../assets/product.png")
+          source={{uri: item.sanPham.anhSanPham}
           }
           style={{ height: 80, width: 80, borderRadius: 40 }}
         />
@@ -216,27 +214,6 @@ const CartScreen = ({ navigation }) => {
           paddingVertical: 10,
         }}
       >
-        {/* Subtotal */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>Tổng</Text>
-          <Text style={{ fontSize: 18 }}>{subtotal}đ</Text>
-        </View>
-
-        {/* Shipping Fee */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>Phí vận chuyển</Text>
-          <Text style={{ fontSize: 18 }}>{CONSTANTS.SHIPPING_FEE}đ</Text>
-        </View>
 
         {/* Total */}
         <View

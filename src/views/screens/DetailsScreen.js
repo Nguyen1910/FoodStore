@@ -159,40 +159,21 @@ const DetailsScreen = ({ navigation, route }) => {
           </View>
         </TouchableOpacity>
       </View>
+
       <ScrollView showsHorizontalScrollIndicator={false}>
         <View
           style={{
             justifyContent: "center",
             alignItems: "center",
-            height: 280,
+            height: 320,
           }}
         >
-          <View
-            style={{
-              backgroundColor: COLORS.primary,
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              position: "absolute",
-              zIndex: 1,
-              top: 15,
-              right: 85,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{ color: COLORS.white, fontSize: 15, fontWeight: "bold" }}
-            >
-              {product.giamGia}%
-            </Text>
-          </View>
           <Image
-            source={product.anhSanPham || require("../../assets/product.png")}
-            style={{ height: 220, width: 220 }}
+            source={{uri: product.anhSanPham}}
+            style={{ height: 240, width: 240 }}
           />
         </View>
+
         <View style={styles.detail}>
           <View
             style={{
@@ -234,55 +215,10 @@ const DetailsScreen = ({ navigation, route }) => {
           </View>
           <View style={{ marginVertical: 10 }}>
             <Text style={{ fontSize: 16, color: COLORS.light }}>
-              {product.moTa || "Trà sữa được làm từ sữa và trà"}
+              {product.moTa}
             </Text>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: 15,
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: COLORS.white,
-                fontSize: 16,
-              }}
-            >
-              Sizes:
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 5,
-              }}
-            >
-              {sizes.map((item, index) => {
-                return (
-                  <SecondaryButton
-                    key={index}
-                    title={item}
-                    btnContainerStyle={{
-                      paddingHorizontal: 15,
-                      paddingVertical: 10,
-                      borderRadius: 5,
-                      marginLeft: 30,
-                      backgroundColor:
-                        selectedSize === index ? COLORS.red : COLORS.white,
-                    }}
-                    labelStyle={{
-                      color:
-                        selectedSize === index ? COLORS.white : COLORS.primary,
-                    }}
-                    onPress={() => setSelectedSize(index)}
-                  />
-                );
-              })}
-            </View>
-          </View>
+
           <View
             style={{
               flexDirection: "row",
@@ -327,7 +263,7 @@ const DetailsScreen = ({ navigation, route }) => {
               paddingHorizontal: 30,
               borderRadius: 30,
               backgroundColor: COLORS.white,
-              marginVertical: 20,
+              marginVertical: 30,
             }}
             onPress={() => {
               // ToastAndroid.show(
@@ -357,7 +293,7 @@ const DetailsScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal:20,
     height: 50,
     flexDirection: "row",
     alignItems: "center",
@@ -365,8 +301,8 @@ const styles = StyleSheet.create({
   },
   detail: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 60,
+    paddingTop: 40,
+    paddingBottom: 40,
     backgroundColor: COLORS.primary,
     borderTopRightRadius: 40,
     borderTopLeftRadius: 40,

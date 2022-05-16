@@ -26,6 +26,8 @@ const InfoUserScreen = ({ navigation, route }) => {
   const [birthday, setBirthday] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [phone, setPhone] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [image, setImage] = React.useState("");
 
   React.useEffect(() => {
     const getAccount = async () => {
@@ -45,6 +47,8 @@ const InfoUserScreen = ({ navigation, route }) => {
       setBirthday(account.ngaySinh);
       setAddress(account.diaChi);
       setPhone(account.soDienThoai);
+      setEmail(account.email);
+      setImage(account.anhDaiDien);
     };
     setInfo();
   }, [account]);
@@ -72,6 +76,8 @@ const InfoUserScreen = ({ navigation, route }) => {
       diaChi: address,
       ngaySinh: birthday,
       soDienThoai: phone,
+      email: email,
+      anhDaiDien: anhDaiDien,
     };
     console.log(data);
     try {
@@ -168,6 +174,30 @@ const InfoUserScreen = ({ navigation, route }) => {
                   color: phone !== "" ? COLORS.green : COLORS.red,
                 }}
                 name={phone !== "" ? "check-circle-outline" : "warning"}
+                size={20}
+              />
+            </View>
+          }
+        />
+
+        <FormInput
+          lable="Email"
+          value={email}
+          containerStyle={{
+            marginTop: 15,
+          }}
+          onChange={(value) => setEmail(value)}
+          appendComponent={
+            <View
+              style={{
+                justifyContent: "center",
+              }}
+            >
+              <Icon
+                style={{
+                  color: email !== "" ? COLORS.green : COLORS.red,
+                }}
+                name={email !== "" ? "check-circle-outline" : "warning"}
                 size={20}
               />
             </View>

@@ -77,7 +77,7 @@ const DetailOrderScreen = ({ navigation, route }) => {
       <View style={styles.detailCard}>
         <Image
           source={
-            item.sanPham.anhSanPham || require("../../assets/product.png")
+            {uri: item.sanPham.anhSanPham}
           }
           style={{ height: 80, width: 80, borderRadius: 40 }}
         />
@@ -161,17 +161,6 @@ const DetailOrderScreen = ({ navigation, route }) => {
         >
           <Text style={{ fontSize: 24 }}>Tổng:</Text>
           <Text style={{ fontSize: 24 }}>{subtotal}đ</Text>
-        </View>
-
-        {/* Shipping Fee */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text style={{ fontSize: 24 }}>Phí vận chuyển:</Text>
-          <Text style={{ fontSize: 24 }}>{CONSTANTS.SHIPPING_FEE}đ</Text>
         </View>
 
         {/*discount*/}

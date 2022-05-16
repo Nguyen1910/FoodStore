@@ -71,7 +71,7 @@ const ProfileScreen = ({ navigation }) => {
       <TouchableOpacity onPress={() => navigation.navigate("InfoUser", token)}>
         <View style={styles.header}>
           <Image
-            source={require("../../assets/user.png")}
+            source={{uri: user.anhDaiDien}}
             style={{ height: 50, width: 50, borderRadius: 25 }}
           />
           <View style={{ marginLeft: 30 }}>
@@ -104,7 +104,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <View style={styles.row}>
           <Icon name="email" color={COLORS.grey} size={20} />
-          <Text style={{ color: COLORS.grey, marginLeft: 10 }}>@id.email</Text>
+          <Text style={{ color: COLORS.grey, marginLeft: 10 }}>{user.email}</Text>
         </View>
       </View>
       <View style={styles.menuWrap}>

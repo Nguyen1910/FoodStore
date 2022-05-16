@@ -136,7 +136,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.card}>
           <View style={{ alignItems: "center", marginTop: 10 }}>
             <Image
-              source={require("../../assets/product.png")}
+              source={{uri: product.anhSanPham}}
               style={{ height: 120, width: 120, borderRadius: 10 }}
             />
           </View>
@@ -184,7 +184,7 @@ const HomeScreen = ({ navigation }) => {
           </Text>
         </View>
         <Image
-          source={require("../../assets/product.png")}
+          source={{uri: user.anhDaiDien}}
           style={{ height: 50, width: 50, borderRadius: 25 }}
         />
       </View>
@@ -198,9 +198,6 @@ const HomeScreen = ({ navigation }) => {
             placeholder="Tìm kiếm đồ uống"
             onChangeText={(value) => console.log(value)}
           />
-        </View>
-        <View style={styles.sortBtn}>
-          <Icon name="tune" size={32} color={COLORS.white} />
         </View>
       </View>
       <View>

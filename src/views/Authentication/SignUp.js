@@ -30,6 +30,7 @@ const SignUp = ({ navigation }) => {
   const [birthday, setBirthday] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [phone, setPhone] = React.useState("");
+  const [email, setEmail] = React.useState("");
 
   const [showModal, setShowModal] = React.useState(false);
 
@@ -44,7 +45,8 @@ const SignUp = ({ navigation }) => {
       username !== "" &&
       birthday !== "" &&
       address !== "" &&
-      phone !== ""
+      phone !== "" &&
+      email !== ""
     );
   }
 
@@ -72,10 +74,11 @@ const SignUp = ({ navigation }) => {
           trangThai: 1,
           hoVaTen: username,
           quyenTaiKhoan: 0,
-          anhDaiDien: "",
+          anhDaiDien: "https://res.cloudinary.com/thuan6420/image/upload/v1652634543/lm3jspil8im4vqljyfev.jpg",
           diaChi: address,
           ngaySinh: birthday,
           soDienThoai: phone,
+          email: email
         };
         try {
           const result = await accountApi.addAccount(data);
@@ -272,6 +275,29 @@ const SignUp = ({ navigation }) => {
                     color: phone !== "" ? COLORS.green : COLORS.red,
                   }}
                   name={phone !== "" ? "check-circle-outline" : "warning"}
+                  size={20}
+                />
+              </View>
+            }
+          />
+
+          <FormInput
+            lable="Email"
+            containerStyle={{
+              marginTop: 15,
+            }}
+            onChange={(value) => setEmail(value)}
+            appendComponent={
+              <View
+                style={{
+                  justifyContent: "center",
+                }}
+              >
+                <Icon
+                  style={{
+                    color: email !== "" ? COLORS.green : COLORS.red,
+                  }}
+                  name={email !== "" ? "check-circle-outline" : "warning"}
                   size={20}
                 />
               </View>
