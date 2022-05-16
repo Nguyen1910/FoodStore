@@ -56,7 +56,7 @@ const DeliverScreen = ({ navigation, route }) => {
             0
           )
         : 0;
-      setTotal(total + CONSTANTS.SHIPPING_FEE);
+      setTotal(total);
     };
     totalFee();
   }, [cart]);
@@ -71,7 +71,7 @@ const DeliverScreen = ({ navigation, route }) => {
             0
           )
         : 0;
-      setTotal(((total + CONSTANTS.SHIPPING_FEE) * (100 - tempDiscount)) / 100);
+      setTotal(((total) * (100 - tempDiscount)) / 100);
     };
     totalFee();
   };
@@ -260,8 +260,8 @@ const DeliverScreen = ({ navigation, route }) => {
         style={{
           flex: 1,
           marginTop: 30,
-          paddingHorizontal: 20,
         }}
+        contentContainerStyle={{paddingHorizontal: 16}}
       >
         <FormInput
           lable="Người nhận"
@@ -279,7 +279,7 @@ const DeliverScreen = ({ navigation, route }) => {
           }}
           errorMsg={addressError}
         />
-        <View style={{ marginTop: 5 }}>
+        {/* <View style={{ marginTop: 5 }}>
           <Text style={{ fontSize: 20 }}>Phương thức thanh toán</Text>
           <View
             style={{
@@ -305,7 +305,7 @@ const DeliverScreen = ({ navigation, route }) => {
               />
             ))}
           </View>
-        </View>
+        </View> */}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => setShowModal(!showModal)}
