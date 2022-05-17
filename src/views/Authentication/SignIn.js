@@ -25,7 +25,7 @@ const SignIn = ({ navigation }) => {
   const handlePressSignIn = async () => {
     try {
       const result = await accountApi.getLogin(username, password);
-      if (result.matKhau === password && result.trangThai === 1) {
+      if (result.matKhau === password && result.trangThai === 0) {
         const token = JSON.parse(await AsyncStorage.getItem("token")) || "";
         if (token === "") {
           await AsyncStorage.setItem(
@@ -34,7 +34,7 @@ const SignIn = ({ navigation }) => {
           );
         }
         navigation.navigate("Home");
-      } else if (result.matKhau === password && result.trangThai === 0) {
+      } else if (result.matKhau === password && result.trangThai === 1) {
         setError("Tài khoản bị khóa!");
       }
     } catch (error) {

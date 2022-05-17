@@ -25,7 +25,6 @@ const SignUp = ({ navigation }) => {
   const [confirmPassError, setConfirmPassError] = React.useState("");
   const [showPass, setShowPass] = React.useState(false);
   const [showConfirmPass, setShowConfirmPass] = React.useState(false);
-  // const [emailError, setEmailError] = React.useState("");
   const [username, setUsername] = React.useState("");
   const [birthday, setBirthday] = React.useState("");
   const [address, setAddress] = React.useState("");

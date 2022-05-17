@@ -17,12 +17,15 @@ import cartApi from "../../api/cartApi";
 import detailOrderApi from "../../api/detailOrderApi";
 import discountApi from "../../api/discountApi";
 import CONSTANTS from "../../consts/const";
+import accountApi from "../../api/accountApi";
+import emailApi from "../../api/emailApi";
 
 const PAYMENT = ["Thanh toán khi nhận hàng", "Thanh toán qua vi momo"];
 const CURRENT_DATE = new Date();
 
 const DeliverScreen = ({ navigation, route }) => {
   const [token] = route.params;
+  const [user, setUser] = React.useState({});
   const [receiver, setReceiver] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [receiverError, setReceiverError] = React.useState("");
@@ -31,9 +34,25 @@ const DeliverScreen = ({ navigation, route }) => {
   const [listDiscount, setListDiscount] = React.useState([]);
   const [showModal, setShowModal] = React.useState(false);
   const [selectedPay, setSelectedPay] = React.useState(0);
-  const [date, setDate] = React.useState("");
   const [discount, setDiscount] = React.useState({});
   const [total, setTotal] = React.useState(0);
+  const [OTP, setOTP] = React.useState(0);
+  const [OTPError, setOTPError] = React.useState("");
+  const [confirmOtp, setConfirmOtp] = React.useState(0);
+
+  React.useEffect(() => {
+    const getUser = async () => {
+      try {
+        const result = await accountApi.getAccount(token);
+        setUser(result);
+        setReceiver(result.hoVaTen);
+        setAddress(result.diaChi);
+      } catch (error) {
+        console.log(error, "user", token);
+      }
+    };
+    getUser();
+  }, [token]);
 
   React.useEffect(() => {
     const getCart = async () => {
@@ -76,23 +95,33 @@ const DeliverScreen = ({ navigation, route }) => {
     totalFee();
   };
 
-  const checkInput = () => receiver !== "" && address !== "";
+  const checkInput = () => receiver !== "" && address !== "" && OTP !== 0;
+
+  const handleSendOTP = async () => {
+    const otp = await emailApi.sendOTP(user.email);
+    console.log(otp);
+    setConfirmOtp(otp);
+  };
 
   const handleOrder = async () => {
     // console.log(discount.maPhieuGiamGia);
     if (checkInput()) {
-      try {
-        const addOrder = await orderApi.addOrder({
-          maTaiKhoan: token,
-          nguoiNhan: receiver,
-          diaChi: address,
-          maGiamGia: discount.maPhieuGiamGia,
-        });
-        addDetailOrder(addOrder.maDonHang);
-        deleteCart();
-        navigation.navigate("SuccessOrder");
-      } catch (error) {
-        console.log(error, "order");
+      if (parseInt(OTP) === confirmOtp) {
+        try {
+          const addOrder = await orderApi.addOrder({
+            maTaiKhoan: token,
+            nguoiNhan: receiver,
+            diaChi: address,
+            maGiamGia: discount.maPhieuGiamGia || "",
+          });
+          addDetailOrder(addOrder.maDonHang);
+          deleteCart();
+          navigation.navigate("SuccessOrder");
+        } catch (error) {
+          console.log(error, "order");
+        }
+      } else {
+        setOTPError("OTP không đúng!");
       }
     } else {
       if (receiver === "") {
@@ -100,6 +129,9 @@ const DeliverScreen = ({ navigation, route }) => {
       }
       if (address === "") {
         setAddressError("Nhập địa chỉ nhận!");
+      }
+      if (OTP === "") {
+        setOTPError("Nhập OTP!");
       }
     }
   };
@@ -236,7 +268,7 @@ const DeliverScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView
+    <ScrollView
       style={{
         backgroundColor: COLORS.white,
         flex: 1,
@@ -265,6 +297,7 @@ const DeliverScreen = ({ navigation, route }) => {
       >
         <FormInput
           lable="Người nhận"
+          value={receiver}
           onChange={(value) => {
             setReceiver(value);
             setReceiverError("");
@@ -273,6 +306,7 @@ const DeliverScreen = ({ navigation, route }) => {
         />
         <FormInput
           lable="Địa chỉ"
+          value={address}
           onChange={(value) => {
             setAddress(value);
             setAddressError("");
@@ -331,6 +365,39 @@ const DeliverScreen = ({ navigation, route }) => {
             {discount.maNhap || "Chọn phiếu giảm giá"}
           </Text>
         </TouchableOpacity>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignContent: "center",
+            marginTop: 10,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <FormInput
+              lable="Nhập mã OTP"
+              onChange={(value) => {
+                setOTP(value);
+                setOTPError("");
+              }}
+              errorMsg={OTPError}
+            />
+          </View>
+          <SecondaryButton
+            title="Gửi OTP"
+            btnContainerStyle={{
+              backgroundColor: COLORS.primary,
+              paddingHorizontal: 15,
+              paddingVertical: 15,
+              borderRadius: 20,
+              marginLeft: 20,
+              marginTop: 30,
+            }}
+            labelStyle={{ color: COLORS.white }}
+            onPress={handleSendOTP}
+          />
+        </View>
       </ScrollView>
       <View
         style={{
@@ -360,7 +427,7 @@ const DeliverScreen = ({ navigation, route }) => {
         />
       </View>
       <Discount />
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
