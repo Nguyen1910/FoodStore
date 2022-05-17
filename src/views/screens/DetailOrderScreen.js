@@ -77,7 +77,8 @@ const DetailOrderScreen = ({ navigation, route }) => {
       <View style={styles.detailCard}>
         <Image
           source={
-            item.sanPham.anhSanPham || require("../../assets/product.png")
+            { uri: item.sanPham.anhSanPham } ||
+            require("../../assets/product.png")
           }
           style={{ height: 80, width: 80, borderRadius: 40 }}
         />

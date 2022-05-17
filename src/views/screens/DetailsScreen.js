@@ -189,8 +189,10 @@ const DetailsScreen = ({ navigation, route }) => {
             </Text>
           </View>
           <Image
-            source={product.anhSanPham || require("../../assets/product.png")}
-            style={{ height: 220, width: 220 }}
+            source={
+              { uri: product.anhSanPham } || require("../../assets/product.png")
+            }
+            style={{ height: 220, width: 220, resizeMode: "cover" }}
           />
         </View>
         <View style={styles.detail}>

@@ -102,9 +102,15 @@ const CartScreen = ({ navigation }) => {
       <View style={styles.cartCard}>
         <Image
           source={
-            item.sanPham.anhSanPham || require("../../assets/product.png")
+            { uri: item.sanPham.anhSanPham } ||
+            require("../../assets/product.png")
           }
-          style={{ height: 80, width: 80, borderRadius: 40 }}
+          style={{
+            height: 80,
+            width: 80,
+            borderRadius: 40,
+            resizeMode: "cover",
+          }}
         />
         <View style={{ marginLeft: 15, paddingVertical: 20, flex: 1 }}>
           <Text

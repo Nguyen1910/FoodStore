@@ -44,8 +44,16 @@ const FavoriteScreen = ({ navigation, route }) => {
         <View style={styles.card}>
           <View style={{ alignItems: "center", marginTop: 10 }}>
             <Image
-              source={require("../../assets/product.png")}
-              style={{ height: 120, width: 120, borderRadius: 10 }}
+              source={
+                { uri: product.anhSanPham } ||
+                require("../../assets/product.png")
+              }
+              style={{
+                height: 120,
+                width: 120,
+                borderRadius: 10,
+                resizeMode: "cover",
+              }}
             />
           </View>
           <View style={{ marginTop: 15, height: 40 }}>
